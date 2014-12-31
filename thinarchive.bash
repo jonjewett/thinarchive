@@ -8,12 +8,12 @@
 	srcdata=/path/to/data/to/be/archived						# Path to data to be archived
 	arcdata=/path/to/archive/destination						# Path to write archives to
 
-	scriptfamily=[ThinArchive]:									# Description of script
-	scriptname=`basename $0`									# Short name generated from the filename
+	scriptfamily=[ThinArchive]:							# Description of script
+	scriptname=`basename $0`							# Short name generated from the filename
 
-	syslog=/var/log/system.log 									# Path to your system log
-	logpreface=`hostname -s;echo "$scriptname$scriptfamily "`	# Assembly of computer hostname and script name for log ID's
-	writelog="tee -a ${syslog}"									# How to write to log
+	syslog=/var/log/system.log 							# Path to your system log
+	logpreface=`hostname -s;echo "$scriptname$scriptfamily "`			# Assembly of computer hostname and script name for log ID's
+	writelog="tee -a ${syslog}"							# How to write to log
 
 
 ## Define Functions
