@@ -3,20 +3,78 @@
 
 ##  Define Variables
 
-	timestamp=`date "+[%m-%d-%Y]-[%H.%M.%S]"`					# Date format in archive naming
+	requireroot=yes
+	timestamp=`date "+[%m-%d-%Y]-[%H.%M.%S]"`			# Date format in archive naming
 	
-	srcdata=/path/to/data/to/be/archived						# Path to data to be archived
-	arcdata=/path/to/archive/destination						# Path to write archives to
+	srcdata=/path/to/data/to/be/archived				# Path to data to be archived
+	arcdata=/path/to/write/archives/into				# Path to write archives to
 
 	scriptfamily=[ThinArchive]:							# Description of script
 	scriptname=`basename $0`							# Short name generated from the filename
 
 	syslog=/var/log/system.log 							# Path to your system log
 	logpreface=`hostname -s;echo "$scriptname$scriptfamily "`			# Assembly of computer hostname and script name for log ID's
-	writelog="tee -a ${syslog}"							# How to write to log
-
+	
 
 ## Define Functions
+
+
+	enforceusr() {
+
+		if [[ $(/usr/bin/id -u) -ne 0 ]];
+		
+			then
+
+				echo " " 2>&1 | { read cmdout;echo `date | cut -c 5-19` $logpreface$cmdout; } | $writelog
+				echo "Required user checking failed root privileges detection.  Terminating script execution..." 2>&1 | { read cmdout;echo `date | cut -c 5-19` $logpreface$cmdout; } | $writelog
+				echo " " 2>&1 | { read cmdout;echo `date | cut -c 5-19` $logpreface$cmdout; } | $writelog
+				exit 0		##  Script execution should abort and stop HERE
+
+			else					
+			
+				echo "Verifying administrative privileges..." 2>&1 | { read cmdout;echo `date | cut -c 5-19` $logpreface$cmdout; } | $writelog
+				echo "Root / Super User privileges confirmed.  Continuing with data archival process." 2>&1 | { read cmdout;echo `date | cut -c 5-19` $logpreface$cmdout; } | $writelog
+
+		fi
+
+	}
+
+
+	usrcheck() {
+
+		if [[ "$requireroot" == "yes" ]];
+
+			then
+
+				enforceusr											# Go verify that we're running as root, stop if we're not
+
+			else
+
+				:													# Go ahead and run, whether we're root or not
+
+		fi
+
+	}
+
+
+	startup() {
+
+		if [[ $(/usr/bin/id -u) -ne 0 ]];
+		
+			then
+
+				writelog="tee"										# If user is not root, echo to console
+				usrcheck
+
+			else					
+			
+				writelog="tee -a ${syslog}"							# If user is root, log to syslog
+				usrcheck
+
+		fi
+
+	}
+
 
 	archive() {
 
@@ -37,12 +95,14 @@
 
 	prunearchives() {
 
-		/bin/rm -rf /$arcdata/`ls -t /$arcdata/ | grep 'backup' | head -1` 2>&1 | { read cmdout;echo `date | cut -c 5-19` $logpreface$cmdout; } | $writelog
+		/bin/rm -rf /$arcdata/`ls -t /$arcdata/ | grep 'backup' | tail -1` 2>&1 | { read cmdout;echo `date | cut -c 5-19` $logpreface$cmdout; } | $writelog
 
 	}
 
 
 ## Runtime
+
+	startup
 
 	echo "Archiving data, and hard-linking for data-deduplication. . ." 2>&1 | { read cmdout;echo `date | cut -c 5-19` $logpreface$cmdout; } | $writelog
 	archive
