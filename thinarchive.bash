@@ -3,17 +3,17 @@
 
 ##  Define Variables
 
-	requireroot=yes
-	timestamp=`date "+[%m-%d-%Y]-[%H.%M.%S]"`			# Date format in archive naming
+	requireroot=yes								# Require root privileges to execute? (yes/no)
+	timestamp=`date "+[%m-%d-%Y]-[%H.%M.%S]"`				# Date format in archive naming
 	
-	srcdata=/path/to/data/to/be/archived				# Path to data to be archived
-	arcdata=/path/to/write/archives/into				# Path to write archives to
+	srcdata=/path/to/data/to/be/archived					# Path to data to be archived
+	arcdata=/path/to/write/archives/into					# Path to write archives to
 
-	scriptfamily=[ThinArchive]:							# Description of script
-	scriptname=`basename $0`							# Short name generated from the filename
+	scriptfamily=[ThinArchive]:						# Description of script
+	scriptname=`basename $0`						# Short name generated from the filename
 
-	syslog=/var/log/system.log 							# Path to your system log
-	logpreface=`hostname -s;echo "$scriptname$scriptfamily "`			# Assembly of computer hostname and script name for log ID's
+	syslog=/var/log/system.log 						# Path to your system log
+	logpreface=`hostname -s;echo "$scriptname$scriptfamily "`		# Assembly of computer hostname and script name for log ID's
 	
 
 ## Define Functions
@@ -28,12 +28,13 @@
 				echo " " 2>&1 | { read cmdout;echo `date | cut -c 5-19` $logpreface$cmdout; } | $writelog
 				echo "Required user checking failed root privileges detection.  Terminating script execution..." 2>&1 | { read cmdout;echo `date | cut -c 5-19` $logpreface$cmdout; } | $writelog
 				echo " " 2>&1 | { read cmdout;echo `date | cut -c 5-19` $logpreface$cmdout; } | $writelog
-				exit 0		##  Script execution should abort and stop HERE
+				exit 0		##  Root verify failed, so we should TERMINATE HERE, NOW
 
 			else					
 			
 				echo "Verifying administrative privileges..." 2>&1 | { read cmdout;echo `date | cut -c 5-19` $logpreface$cmdout; } | $writelog
 				echo "Root / Super User privileges confirmed.  Continuing with data archival process." 2>&1 | { read cmdout;echo `date | cut -c 5-19` $logpreface$cmdout; } | $writelog
+						##  Root verify succeeded, so we'll continue on running...
 
 		fi
 
@@ -46,11 +47,11 @@
 
 			then
 
-				enforceusr											# Go verify that we're running as root, stop if we're not
+				enforceusr	##  Since "requireroot" was set to "yes" on line 6, enforce it!											# Go verify that we're running as root, stop if we're not
 
 			else
 
-				:													# Go ahead and run, whether we're root or not
+				:		##  Since "requireroot" was set to "no" on line 6, we can move on without enforcement.
 
 		fi
 
@@ -63,7 +64,7 @@
 		
 			then
 
-				writelog="tee"										# If user is not root, echo to console
+				writelog="tee"									# If user is not root, echo to console
 				usrcheck
 
 			else					
