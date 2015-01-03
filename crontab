@@ -19,5 +19,9 @@
 # 
 # For more information see the manual pages of crontab(5) and cron(8)
 # 
+# The filesystem path below should be the absolute path to the bash script.  
+# This crontab file can be created and edited by simply running "crontab -e"
+# (without the quotes), and saving this text below into the file.
+# 
 # m h  dom mon dow   command
   0 23  *   *   *    /root/scripts/thinarchive.bash
